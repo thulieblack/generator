@@ -1,6 +1,6 @@
 const path = require('path');
 const { Parser, fromFile } = require('@asyncapi/parser');
-const { getClientName, getInfo, toSnakeCase } = require('@asyncapi/generator-helpers');
+const { getClientName, getInfo, getTitle, toSnakeCase, toCamelCase, lowerFirst, upperFirst } = require('@asyncapi/generator-helpers');
 
 const parser = new Parser();
 const asyncapi_v3_path = path.resolve(__dirname, './__fixtures__/asyncapi-websocket-query.yml');
@@ -14,33 +14,30 @@ describe('getClientName integration test with AsyncAPI', () => {
   });
 
   it('should generate correct client name for the provided AsyncAPI info object without appendClientSuffix', () => {
-    const info = parsedAsyncAPIDocument.info();
     const appendClientSuffix = false;
     const customClientName = '';
 
-    const clientName = getClientName(info, appendClientSuffix, customClientName);
+    const clientName = getClientName(parsedAsyncAPIDocument, appendClientSuffix, customClientName);
 
     // Example assertion: Check if the name is formatted correctly
     expect(clientName).toBe('GeminiMarketDataWebsocketAPI');
   });
 
   it('should generate correct client name for the provided AsyncAPI info object with appendClientSuffix', () => {
-    const info = parsedAsyncAPIDocument.info();
     const appendClientSuffix = true;
     const customClientName = '';
 
-    const clientName = getClientName(info, appendClientSuffix, customClientName);
+    const clientName = getClientName(parsedAsyncAPIDocument, appendClientSuffix, customClientName);
 
     // Example assertion: Check if the name is formatted correctly
     expect(clientName).toBe('GeminiMarketDataWebsocketAPIClient');
   });
 
   it('should return customClientName', () => {
-    const info = parsedAsyncAPIDocument.info();
     const appendClientSuffix = false;
     const customClientName = 'GeminiClient';
 
-    const clientName = getClientName(info, appendClientSuffix, customClientName);
+    const clientName = getClientName(parsedAsyncAPIDocument, appendClientSuffix, customClientName);
 
     // Example assertion: Check if the name is formatted correctly
     expect(clientName).toBe(customClientName);
@@ -82,6 +79,45 @@ describe('getInfo integration test with AsyncAPI', () => {
   });
 });
 
+describe('getTitle integration test with AsyncAPI', () => {
+  let parsedAsyncAPIDocument;
+
+  beforeAll(async () => {
+    const parseResult = await fromFile(parser, asyncapi_v3_path).parse();
+    parsedAsyncAPIDocument = parseResult.document;
+  });
+
+  it('should return the exact title parameter when exists', () => {
+    const info = parsedAsyncAPIDocument.info();
+    const expectedTitle = info.title();
+    const actualTitle = getTitle(parsedAsyncAPIDocument);
+    expect(actualTitle).toStrictEqual(expectedTitle);
+  });
+
+  it('should throw error when title function does not exist', () => {
+    const asyncAPIDocWithoutTitle = {
+      info: () => ({
+        // info object without title method
+      })
+    };
+    expect(() => {
+      getTitle(asyncAPIDocWithoutTitle);
+    }).toThrow('Provided AsyncAPI document info field doesn\'t contain title.');
+  });
+
+  it('should throw error when title is an empty string', () => {
+    const asyncAPIDocWithEmptyTitle = {
+      info: () => ({
+        title: () => ''
+      })
+    };
+
+    expect(() => {
+      getTitle(asyncAPIDocWithEmptyTitle);
+    }).toThrow('AsyncAPI document title cannot be an empty string.');
+  });
+});
+
 describe('toSnakeCase integration test with AsyncAPI', () => {
   let parsedAsyncAPIDocument, operations;
 
@@ -116,5 +152,100 @@ describe('toSnakeCase integration test with AsyncAPI', () => {
     const actualOperationId = toSnakeCase('');
     const expectedOperationId = '';
     expect(actualOperationId).toBe(expectedOperationId);
+  });
+});
+
+describe('toCamelCase integration test with AsyncAPI', () => {
+  let parsedAsyncAPIDocument, ops;
+
+  beforeAll(async () => {
+    const parseResult = await fromFile(parser, asyncapi_v3_path).parse();
+    parsedAsyncAPIDocument = parseResult.document;
+    ops = parsedAsyncAPIDocument.operations();
+  });
+
+  it('should convert snake_case operation names to camelCase format', () => {
+    const operation = ops.get('operation_with_snake_case');
+    const actualOperationId = toCamelCase(operation.id());
+    const expectedOperationId = 'operationWithSnakeCase';
+    expect(actualOperationId).toBe(expectedOperationId);
+  });
+
+  it('should leave already camelCase operation names unchanged', () => {
+    const operation = ops.get('noSummaryNoDescriptionOperations');
+    const actualOperationId = toCamelCase(operation.id());
+    const expectedOperationId = 'noSummaryNoDescriptionOperations';
+    expect(actualOperationId).toBe(expectedOperationId);
+  });
+
+  it('should convert PascalCase operation names to camelCase format', () => {
+    const operation = ops.get('PascalCaseOperation');
+    const actualOperationId = toCamelCase(operation.id());
+    const expectedOperationId = 'pascalCaseOperation';
+    expect(actualOperationId).toBe(expectedOperationId);
+  });
+
+  it('should return empty string when operation ID is empty', () => {
+    const actualOperationId = toCamelCase('');
+    const expectedOperationId = '';
+    expect(actualOperationId).toBe(expectedOperationId);
+  });
+});
+
+describe('lowerFirst', () => {
+  let parsedAsyncAPIDocument, operations;
+
+  beforeAll(async () => {
+    const parseRes = await fromFile(parser, asyncapi_v3_path).parse();
+    parsedAsyncAPIDocument = parseRes.document;
+    operations = parsedAsyncAPIDocument.operations();
+  });
+
+  it('should convert PascalCase operation names to lowerFirst format', () => {
+    const operation = operations.get('PascalCaseOperation');
+    const actualOperationId = lowerFirst(operation.id());
+    const expectedOperationId = 'pascalCaseOperation';
+    expect(actualOperationId).toBe(expectedOperationId);
+  });
+
+  it('should convert first letter to lowercase for PascalCase strings', () => {
+    const actualResult = lowerFirst('HelloWorld');
+    const expectedResult = 'helloWorld';
+    expect(actualResult).toBe(expectedResult);
+  });
+
+  it('should return empty string when input is empty', () => {
+    const actualResult = lowerFirst('A');
+    const expectedResult = 'a';
+    expect(actualResult).toBe(expectedResult);
+  });
+});
+
+describe('upperFirst', () => {
+  let parsedAsyncAPIDocument, operations;
+
+  beforeAll(async () => {
+    const parsedResult = await fromFile(parser, asyncapi_v3_path).parse();
+    parsedAsyncAPIDocument = parsedResult.document;
+    operations = parsedAsyncAPIDocument.operations();
+  });
+
+  it('should convert camelCase operation names to PascalCase format', () => {
+    const operation = operations.get('noSummaryNoDescriptionOperations');
+    const actualOperationId = upperFirst(operation.id());
+    const expectedOperationId = 'NoSummaryNoDescriptionOperations';
+    expect(actualOperationId).toBe(expectedOperationId);
+  });
+
+  it('should convert first letter to uppercase for camelCase strings', () => {
+    const actualResult = upperFirst('helloWorld');
+    const expectedResult = 'HelloWorld';
+    expect(actualResult).toBe(expectedResult);
+  });
+
+  it('should handle single character strings', () => {
+    const actualResult = upperFirst('a');
+    const expectedResult = 'A';
+    expect(actualResult).toBe(expectedResult);
   });
 });

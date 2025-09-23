@@ -44,9 +44,45 @@ const getServer = (servers, serverName) => {
   return servers.get(serverName);
 };
 
+/**
+   * Get server Host from AsyncAPI server object.
+   *
+   * @param {object} server - The AsyncAPI server object.
+   * 
+   * return {string} - The server host.
+   */
+const getServerHost = (server) => {
+  const serverHost = server.host();
+  if (!serverHost) {
+    throw new Error('Host not found in the server configuration.');
+  }
+  // Match common protocols followed by :// (User should not include protocol in host, check with server.protocol() method)
+  const protocolRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
+  return serverHost.replace(protocolRegex, '');  
+};
+
+/**
+ * Get server Protocol from AsyncAPI server object.
+ *
+ * @param {object} server - The AsyncAPI server object.
+ * 
+ * @returns {string} - The server protocol.
+ */
+const getServerProtocol = (server) => {
+  const serverProtocol = server.protocol();
+  
+  if (!serverProtocol) {
+    throw new Error('Protocol is not defined in server configuration.');
+  }
+  
+  return serverProtocol;
+};
+  
 module.exports = {
   getServerUrl,
-  getServer
+  getServer,
+  getServerHost,
+  getServerProtocol
 };
 
 //TODO: this separate file for helpers for servers represents approach to keep all helpers in separate files related to extractions of data from specific high level AsyncAPI objects. Here we will have more helpers for example related to variables extraction from servers, security, etc.

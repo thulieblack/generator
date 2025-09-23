@@ -1,16 +1,21 @@
 import { Text } from '@asyncapi/generator-react-sdk';
+import { getClientName, getServerUrl, getServer, getQueryParams, getTitle } from '@asyncapi/generator-helpers';
 import { Constructor } from './Constructor';
 import { Connect } from './Connect';
-import { RegisterMessageHandler } from './RegisterMessageHandler';
-import { RegisterErrorHandler } from './RegisterErrorHandler';
 import { HandleMessage } from './HandleMessage';
 import { SendOperation } from './SendOperation';
 import { Send } from './Send';
-import { CloseConnection } from './CloseConnection';
+import { CloseConnection, RegisterMessageHandler, RegisterErrorHandler } from '@asyncapi/generator-components';
 import { RegisterOutgoingProcessor } from './RegisterOutgoingProcessor';
 import { HandleError } from './HandleError';
 
-export function ClientClass({ clientName, serverUrl, title, queryParams, operations }) {
+export function ClientClass({ asyncapi, params }) {
+  const server = getServer(asyncapi.servers(), params.server);
+  const title = getTitle(asyncapi);
+  const queryParams = getQueryParams(asyncapi.channels());
+  const clientName = getClientName(asyncapi, params.appendClientSuffix, params.customClientName);
+  const serverUrl = getServerUrl(server);
+  const operations = asyncapi.operations();
   const sendOperations = operations.filterBySend();
   return (
     <Text>
@@ -19,14 +24,28 @@ export function ClientClass({ clientName, serverUrl, title, queryParams, operati
       </Text>
       <Constructor serverUrl={serverUrl} query={queryParams} />
       <Connect title={title} />
-      <RegisterMessageHandler />
-      <RegisterErrorHandler />
+      <RegisterMessageHandler
+        language="python"
+        methodName='register_message_handler'
+        methodParams={['self', 'handler']}
+        preExecutionCode='"""Register a callable to process incoming messages."""'
+      />
+      <RegisterErrorHandler
+        language="python"
+        methodName='register_error_handler'
+        methodParams={['self', 'handler']}
+        preExecutionCode='"""Register a callable to process errors."""'
+      />
       <RegisterOutgoingProcessor />
       <HandleMessage />
       <HandleError />
       <SendOperation sendOperations={sendOperations} clientName={clientName} />
       <Send sendOperations={sendOperations} />
-      <CloseConnection />
+      <CloseConnection 
+        language="python" 
+        methodParams={['self']}
+        preExecutionCode='"""Cleanly close the WebSocket connection."""'
+      />
     </Text>
   );
 }

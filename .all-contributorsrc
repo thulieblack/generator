@@ -266,7 +266,8 @@
         "infra",
         "review",
         "test",
-        "doc"
+        "doc",
+        "maintenance"
       ]
     },
     {
@@ -329,6 +330,26 @@
         "code",
         "doc",
         "test"
+      ]
+    },
+    {
+      "login": "blazethunderstorm",
+      "name": "ANIRUDH",
+      "avatar_url": "https://avatars.githubusercontent.com/u/149250431?v=4",
+      "profile": "https://github.com/blazethunderstorm",
+      "contributions": [
+        "test"
+      ]
+    },
+    {
+      "login": "Julusian",
+      "name": "Julian Waller",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1327476?v=4",
+      "profile": "https://github.com/Julusian",
+      "contributions": [
+        "bug",
+        "test",
+        "code"
       ]
     }
   ],

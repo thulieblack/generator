@@ -1,11 +1,9 @@
 import { Text } from '@asyncapi/generator-react-sdk';
 import { Constructor } from './Constructor';
 import { Connect } from './Connect';
-import { RegisterMessageHandler } from './RegisterMessageHandler';
-import { RegisterErrorHandler } from './RegisterErrorHandler';
 import { HandleMessage } from './HandleMessage';
 import { SendOperation } from './SendOperation';
-import { CloseConnection } from './CloseConnection';
+import { CloseConnection, RegisterMessageHandler, RegisterErrorHandler } from '@asyncapi/generator-components';
 import { ModuleExport } from './ModuleExport';
 
 export function ClientClass({ clientName, serverUrl, title, sendOperations}) {
@@ -16,11 +14,17 @@ export function ClientClass({ clientName, serverUrl, title, sendOperations}) {
       </Text>
       <Constructor serverUrl={serverUrl} />
       <Connect title={title} />
-      <RegisterMessageHandler />
-      <RegisterErrorHandler />
+      <RegisterMessageHandler 
+        language="javascript" 
+        methodParams={['handler']}
+      />
+      <RegisterErrorHandler
+        language="javascript" 
+        methodParams={['handler']}
+      />
       <HandleMessage />
       <SendOperation sendOperations={sendOperations} clientName={clientName} />
-      <CloseConnection />
+      <CloseConnection language="javascript" />
       <Text>
         {'}'}
       </Text>

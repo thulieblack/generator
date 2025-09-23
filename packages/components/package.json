@@ -1,26 +1,35 @@
 {
   "name": "@asyncapi/generator-components",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "Package with reusable components for generation using React render engine",
   "scripts": {
     "test": "npm run build && jest --coverage",
-    "test:update": "jest --updateSnapshot",
+    "test:update": "npm run test -- -u",
     "build": "babel src --out-dir lib",
     "prepublishOnly": "npm run build",
     "lint": "eslint --max-warnings 0 --config ../../.eslintrc --ignore-path ../../.eslintignore .",
     "lint:fix": "eslint --max-warnings 0 --config ../../.eslintrc --ignore-path ../../.eslintignore . --fix",
     "generate:assets": "npm run prepublishOnly"
   },
+  "files": [
+    "lib/**",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/asyncapi/generator/packages/components"
+    "url": "https://github.com/asyncapi/generator.git",
+    "directory": "packages/components"
   },
   "author": "Lukasz Gornicki",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@asyncapi/generator-react-sdk": "^1.1.2",
-    "@asyncapi/modelina": "^5.1.0"
+    "@asyncapi/generator-react-sdk": "*",
+    "@asyncapi/modelina": "^5.3.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.25.9",
