@@ -1,11 +1,8 @@
 import { Text } from '@asyncapi/generator-react-sdk';
 import { getClientName, getServerUrl, getServer, getQueryParams, getTitle } from '@asyncapi/generator-helpers';
-import { Constructor } from './Constructor';
-import { Connect } from './Connect';
-import { HandleMessage } from './HandleMessage';
-import { SendOperation } from './SendOperation';
 import { Send } from './Send';
-import { CloseConnection, RegisterMessageHandler, RegisterErrorHandler } from '@asyncapi/generator-components';
+import { Constructor } from './Constructor';
+import { CloseConnection, RegisterMessageHandler, RegisterErrorHandler, SendOperations, Connect, HandleMessage } from '@asyncapi/generator-components';
 import { RegisterOutgoingProcessor } from './RegisterOutgoingProcessor';
 import { HandleError } from './HandleError';
 
@@ -23,7 +20,7 @@ export function ClientClass({ asyncapi, params }) {
         {`class ${clientName}:`}
       </Text>
       <Constructor serverUrl={serverUrl} query={queryParams} />
-      <Connect title={title} />
+      <Connect language="python" title={title} />
       <RegisterMessageHandler
         language="python"
         methodName='register_message_handler'
@@ -37,9 +34,18 @@ export function ClientClass({ asyncapi, params }) {
         preExecutionCode='"""Register a callable to process errors."""'
       />
       <RegisterOutgoingProcessor />
-      <HandleMessage />
+      <HandleMessage
+        language="python"
+        methodName='handle_message'
+        methodParams={['self', 'message']}
+        preExecutionCode='"""Pass the incoming message to all registered message handlers. """'
+      />
       <HandleError />
-      <SendOperation sendOperations={sendOperations} clientName={clientName} />
+      <SendOperations 
+        language="python"
+        sendOperations={sendOperations} 
+        clientName={clientName} 
+      />
       <Send sendOperations={sendOperations} />
       <CloseConnection 
         language="python" 
